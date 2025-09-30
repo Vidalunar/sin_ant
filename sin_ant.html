@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sinónimos & Antónimos</title>
+
+<!-- TailwindCSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand:wght@400&display=swap" rel="stylesheet" />
+<meta name="color-scheme" content="light dark" />
+
+<style>
+  :root{ --sky:#4fa0ff; --teal:#2ce9df; --text:#eef5fb; --ink:#0f213a; }
+  body{ font-family:"Patrick Hand", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Apple Color Emoji","Noto Color Emoji", sans-serif;
+        color:var(--text);
+        background:
+        radial-gradient(1400px 760px at 3% -18%, rgba(44,233,223,.55), transparent 62%),
+        radial-gradient(1300px 720px at -12% -10%, rgba(79,160,255,.52), transparent 64%),
+        radial-gradient(900px 540px at 106% -4%, rgba(79,160,255,.28), transparent 65%),
+        linear-gradient(180deg, #142f4f 0%, #18375e 32%, #1f4374 66%, #1c3b68 100%); }
+  .glass{ backdrop-filter:blur(14px); background:linear-gradient(180deg, #ffffff2b, #ffffff12); border:1px solid #ffffff36; box-shadow: 0 10px 30px #08152933; }
+  .card{ background:linear-gradient(180deg, #ffffff28, #ffffff14); border:1px solid #ffffff26; }
+  .hero-title{ text-shadow:0 8px 22px #09122566, 0 2px 0 #0e203955; }
+  .btn{ @apply inline-flex items-center justify-center gap-2 rounded-2xl font-semibold transition active:scale-95;
+        padding:1rem 1.5rem; border:1px solid #ffffff28;
+        background:linear-gradient(180deg,#ffffff40,#ffffff20), linear-gradient(135deg,#2f4b6f,var(--sky) 60%);
+        box-shadow:inset 0 1px 0 #ffffff80,inset 0 -6px 12px #00000014,0 10px 22px #06112640; }
+  .btn:hover{ transform:translateY(-1px); box-shadow:inset 0 1px 0 #ffffffaa,inset 0 -8px 14px #00000018,0 14px 26px #091a3340; }
+  .btn-ghost{ background:linear-gradient(180deg,#ffffff18,#ffffff10); color:var(--text); }
+  .btn-amber{ background:linear-gradient(180deg,#ffffff50,#ffffff22), linear-gradient(135deg,#ffd479,#ffc146 60%); color:#3a2500; border-color:#ffe2a3; }
+  .chip{ @apply text-xs md:text-sm px-3 py-1.5 rounded-full font-semibold; background:#ffffff22; border:1px solid #ffffff33; }
+  .switch{ @apply relative inline-flex items-center h-10 w-[5rem] rounded-full cursor-pointer transition;
+    background:#27415f; border:1px solid #ffffff4a; box-shadow: inset 0 0 16px #0006; }
+  .switch[data-on="true"]{ background:#18c9bf; box-shadow: inset 0 0 10px #ffffff80, 0 0 16px #21ffe6aa; }
+  .knob{ @apply absolute top-0.5 left-0.5 h-9 w-9 rounded-full bg-white shadow grid place-items-center;
+    transition: transform .25s ease; font-weight:900; font-size:22px; text-shadow:0 1px 0 #fff,0 0 6px #21ffe666; }
+  .switch[data-on="true"] .knob{ transform: translateX(44px); }
+  .k-tick{ color:#063; filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 6px #c3fff6); }
+  .k-x{ color:#6b7280; }
+  .toast{ position:absolute; right:0; top:-36px; padding:.35rem .65rem; border-radius:12px; font-size:.9rem;
+    background:#0fb69e; color:#062a2a; border:1px solid #9ff3ea; opacity:0; transform:translateY(8px); transition: all .25s ease; }
+  .toast.show{ opacity:1; transform:translateY(0); }
+  .progress-wrap{ background:#ffffff1b; border:1px solid #ffffff2e; }
+  .progress-bar{ height:12px; border-radius:9999px; background:linear-gradient(90deg,#2ce9df,#86d2ff,#e9f2ff);
+    box-shadow:0 0 16px #7ad0ff80 inset, 0 4px 18px #0a254440; transition:width .3s ease; }
+  .input{ @apply w-full sm:w-[32rem] rounded-2xl placeholder-slate-200;
+    color:var(--text); font-size:clamp(22px,2.6vw,32px); line-height:1.25;
+    padding:1.15rem 1.35rem; background:linear-gradient(180deg,#ffffff1f,#ffffff12);
+    border:1px solid #ffffff2f; box-shadow:inset 0 4px 12px #00000018; }
+  .fx{ width:min(15vw,138px); height:min(15vw,138px); }
+  .pop{ animation:pop .35s ease-out; } @keyframes pop{0%{transform:scale(.3) rotate(-10deg);opacity:.1}80%{transform:scale(1.1) rotate(2deg)}100%{transform:scale(1);opacity:1}}
+  #confetti{ position:fixed; inset:0; pointer-events:none; z-index:999; }
+</style>
+</head>
+
+<body>
+  <canvas id="confetti"></canvas>
+
+  <header class="max-w-6xl mx-auto px-4 pt-6 pb-2">
+    <div class="flex items-center gap-4">
+      <div class="h-16 w-16 rounded-full overflow-hidden ring-2 ring-white/70 shadow-[0_10px_30px_rgba(8,17,38,.35)]">
+        <img src="./pr-sello.png" alt="Sello PR" class="h-full w-full object-cover" />
+      </div>
+      <div class="flex-1">
+        <h1 class="hero-title text-3xl sm:text-4xl md:text-5xl font-bold">Sinónimos & Antónimos</h1>
+        <p class="text-base md:text-lg text-cyan-100/90 -mt-1">21 rondas · Pista y Reintento (+0,5) · Nota automática</p>
+      </div>
+      <button id="muteBtn" class="btn btn-ghost px-3 py-2" title="Silenciar/activar sonido">🔊</button>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 pb-24">
+    <section class="glass rounded-3xl p-5 sm:p-8">
+      <div class="card rounded-2xl p-5 mb-6">
+        <div id="hud" class="hidden">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div class="flex items-center gap-3 flex-wrap">
+              <span class="chip"><span id="round">1</span> / 21</span>
+              <span id="modeTag" class="chip">Sinónimo</span>
+              <span class="chip">Puntos: <b id="score">0</b></span>
+            </div>
+            <div class="text-right">
+              <span class="chip">✅ <b id="good">0</b></span>
+              <span class="chip">❌ <b id="bad">0</b></span>
+            </div>
+          </div>
+          <div class="mt-3 w-full progress-wrap rounded-full overflow-hidden">
+            <div id="bar" class="progress-bar" style="width:0%"></div>
+          </div>
+        </div>
+        <p id="hudHint" class="opacity-90 text-sm">Pulsa <b>Comenzar</b> y escribe el <b>sinónimo</b> o <b>antónimo</b>. <b>Pista</b> / <b>Reintentar</b> valen +0,5. <b>Siguiente</b> salta; <b>Ver respuesta</b> no puntúa. <b>Ignorar tildes</b> permite “rápido = rapido”.</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6 mb-6">
+        <div class="card rounded-2xl p-5 relative">
+          <div class="flex items-center justify-between">
+            <div class="relative">
+              <span class="mr-3">Ignorar tildes</span>
+              <button id="accentSwitch" class="switch" data-on="true" aria-label="Ignorar tildes">
+                <span class="knob"><span class="k-tick">✓</span><span class="k-x">×</span></span>
+              </button>
+              <span id="tildeToast" class="toast">✓ Tildes ignoradas</span>
+            </div>
+            <div class="flex gap-3">
+              <button id="startBtn" class="btn text-lg">Comenzar</button>
+              <button id="restartBtn" class="btn btn-amber hidden">Reiniciar</button>
+            </div>
+          </div>
+          <details class="mt-4">
+            <summary class="cursor-pointer">Ver instrucciones</summary>
+            <ul class="list-disc pl-6 space-y-1 mt-2">
+              <li>21 rondas: unas piden <b>sinónimo</b> y otras <b>antónimo</b>.</li>
+              <li><b>Pista</b> y <b>Reintentar</b>: acierto = <b>+0,5</b>.</li>
+              <li><b>Siguiente</b> pasa; <b>Ver respuesta</b> muestra soluciones.</li>
+              <li>Nota final con tu tabla.</li>
+            </ul>
+          </details>
+        </div>
+        <div class="card rounded-2xl p-5">
+          <h2 class="text-xl font-bold mb-2">Objetivo</h2>
+          <p>Practicar <b>sinónimos</b> y <b>antónimos</b> con corrección automática, sonidos y confeti de ⭐ al acertar.</p>
+        </div>
+      </div>
+
+      <div id="playArea" class="hidden">
+        <div class="rounded-3xl p-6 md:p-8 card shadow-inner">
+          <div class="text-center">
+            <p class="text-lg opacity-95 mb-2">Escribe un <span id="modeWord" class="font-bold">sinónimo</span> de:</p>
+            <div id="promptWord" class="text-4xl md:text-5xl font-extrabold mb-4" style="text-shadow:0 0 10px rgba(44,233,223,.9),0 0 20px rgba(79,160,255,.9)"></div>
+
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 justify-center">
+              <input id="answer" type="text" class="input" placeholder="Escribe tu respuesta aquí…" />
+              <button id="checkBtn" class="btn text-lg">Comprobar</button>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-center gap-3 mt-5">
+              <button id="retryBtn" class="btn">Reintentar</button>
+              <button id="hintBtn" class="btn btn-amber">Pista</button>
+              <button id="showAnsBtn" class="btn btn-ghost">Ver respuesta</button>
+              <button id="skipBtn" class="btn btn-ghost">Siguiente ➜</button>
+            </div>
+
+            <div id="hintArea" class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5 max-w-3xl mx-auto"></div>
+
+            <div class="mt-6 h-[138px] flex items-center justify-center">
+              <div id="feedback" class="pop"></div>
+            </div>
+            <div id="helper" class="mt-2 text-sm opacity-95 h-6"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="resultArea" class="hidden">
+        <div class="rounded-3xl p-6 md:p-8 card shadow-inner">
+          <div class="flex flex-col md:flex-row items-center md:items-start gap-8">
+            <div class="text-center md:w-1/3">
+              <div id="bigEmoji" class="fx pop"></div>
+              <p class="text-2xl font-extrabold mt-2">¡Ronda finalizada!</p>
+              <p class="text-lg mt-1">Aciertos: <b id="finalGood">0</b> · Fallos: <b id="finalBad">0</b></p>
+              <p class="text-xl mt-2">Puntos: <b id="finalScore">0</b> / 21</p>
+              <p class="text-3xl mt-2">Nota: <span id="finalGrade" class="px-3 py-1 rounded-xl bg-white/20 border border-white/30"></span></p>
+              <button id="againBtn" class="btn btn-amber mt-5">Jugar otra vez</button>
+            </div>
+            <div class="md:w-2/3 w-full">
+              <h3 class="text-xl font-bold mb-3">Tus respuestas</h3>
+              <div id="mistakes" class="space-y-2 max-h-80 overflow-auto pr-1"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="mt-6 text-center italic" style="font-family:'Patrick Hand', cursive;">
+      Creado por Patricia Romero
+    </footer>
+  </main>
+
+<script>
+/* ====== Helpers ====== */
+/* FIX principal: quitar \p{Diacritic} que rompía en Safari/iOS */
+const $ = (s)=>document.querySelector(s);
+const removeDiacritics = (t)=> (t||"")
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g,""); // seguro y compatible
+const sample = (arr)=> arr[Math.floor(Math.random()*arr.length)];
+const shuffle = (arr)=> arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+
+/* ====== Confeti (estrellas) ====== */
+(function() {
+  const c=document.getElementById('confetti'),x=c.getContext('2d');let W,H,P=[],run=false;
+  function R(){W=c.width=innerWidth;H=c.height=innerHeight}R();addEventListener('resize',R);
+  function starPath(ctx,r){ctx.beginPath();const s=5,st=Math.PI/s;let rot=Math.PI/2*3;ctx.moveTo(0,-r);
+    for(let i=0;i<s;i++){ctx.lineTo(Math.cos(rot)*r, Math.sin(rot)*r);rot+=st;ctx.lineTo(Math.cos(rot)*(r/2.7), Math.sin(rot)*(r/2.7));rot+=st;}ctx.closePath();}
+  function burst(X=W/2,Y=H/3,n=120,p=10){
+    const cols=['#22e6db','#9cf6f2','#e6edf2','#4fa0ff','#ffd479','#ffffff'];
+    for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=Math.random()*p+5;
+      P.push({x:X,y:Y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-6,sz:Math.random()*6+2,rot:Math.random()*Math.PI,vr:(Math.random()-.5)*.2,col:sample(cols),al:1});
+    } if(!run){run=true;requestAnimationFrame(loop);}
+  }
+  function loop(){x.clearRect(0,0,W,H);
+    P.forEach(p=>{p.vy+=.18;p.vx*=.995;p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;p.al-=.006;x.save();x.translate(p.x,p.y);x.rotate(p.rot);x.globalAlpha=Math.max(p.al,0);x.fillStyle=p.col;starPath(x,p.sz);x.fill();x.restore();});
+    P=P.filter(p=>p.al>0&&p.y<H+20); if(P.length){requestAnimationFrame(loop);} else{run=false;} x.globalAlpha=1;}
+  window.confettiBurst=burst;
+})();
+
+/* ====== Audio FX ====== */
+const AudioFX=(()=>{const AC=window.AudioContext||window.webkitAudioContext;const ctx=new AC();
+  const master=ctx.createGain();master.gain.value=.8;master.connect(ctx.destination);let en=false,mut=false;
+  const resume=()=>{if(ctx.state==='suspended')ctx.resume();en=true;};const tog=()=>{mut=!mut;master.gain.value=mut?0:.8;return mut;}
+  function tone(f,t=0,type='sine',d=.12,v=.08){if(!en||mut)return;const o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.value=f;o.connect(g);g.connect(master);const n=ctx.currentTime+t;g.gain.setValueAtTime(0,n);g.gain.linearRampToValueAtTime(v,n+.01);g.gain.exponentialRampToValueAtTime(.0001,n+d);o.start(n);o.stop(n+d+.02);}
+  const chord=(fs,st=.05,type='sine',d=.14,v=.07)=>fs.forEach((f,i)=>tone(f,i*st,type,d,v));
+  return {enable:resume,toggleMute:tog,start(){chord([523,659,784],.03,'triangle',.18,.08);},click(){tone(800,0,'triangle',.05,.06);},success(){chord([880,1046],.02,'sine',.12,.07);},partial(){chord([659,880],.02,'sine',.11,.07);},fail(){tone(220,0,'sawtooth',.35,.08);tone(196,.12,'sawtooth',.33,.07);} };
+})();
+
+/* ====== Iconos ✔ ✖ ====== */
+function iconSVG(kind="ok"){
+  if(kind==="ok"){
+    return `<svg class="fx pop" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <radialGradient id="g" cx="40%" cy="35%" r="70%"><stop offset="0%" stop-color="#b7ffd7"/><stop offset="60%" stop-color="#4ade80"/><stop offset="100%" stop-color="#16a34a"/></radialGradient>
+        <filter id="s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#081529" flood-opacity=".35"/></filter>
+      </defs>
+      <g filter="url(#s)"><circle cx="80" cy="80" r="70" fill="url(#g)"/>
+        <path d="M50 83 L73 106 L115 60" stroke="#0b3b22" stroke-width="16" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M50 83 L73 106 L115 60" stroke="#ffffff" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g></svg>`;
+  }
+  return `<svg class="fx pop" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <radialGradient id="r" cx="40%" cy="35%" r="70%"><stop offset="0%" stop-color="#ffc2c2"/><stop offset="60%" stop-color="#fb7185"/><stop offset="100%" stop-color="#b91c1c"/></radialGradient>
+      <filter id="s2" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#081529" flood-opacity=".35"/></filter>
+    </defs>
+    <g filter="url(#s2)"><circle cx="80" cy="80" r="70" fill="url(#r)"/>
+      <path d="M55 55 L105 105 M105 55 L55 105" stroke="#3b0b0b" stroke-width="16" stroke-linecap="round"/>
+      <path d="M55 55 L105 105 M105 55 L55 105" stroke="#fff" stroke-width="6" stroke-linecap="round"/></g></svg>`;
+}
+
+/* ====== Banco (recortado en este ejemplo; añade el tuyo completo) ====== */
+const BANK=[{base:"afable",pos:"adj",syn:["amable","agradable","atento","cortés","gentil","dulce","cordial","campechano"],ant:["desagradable","antipático","descortés","desabrido"]},
+{base:"ágil",pos:"adj",syn:["hábil","rápido","ligero","veloz","desenvuelto","diestro","desembarazado"],ant:["torpe","lento"]},
+{base:"agotado",pos:"adj",syn:["cansado"],ant:["descansado"]},
+{base:"agrandar",pos:"v",syn:["aumentar"],ant:["disminuir"]},
+{base:"agrupar",pos:"v",syn:["reunir"],ant:["separar"]},
+{base:"alboroto",pos:"n",syn:["jaleo"],ant:["tranquilidad"]},
+{base:"alzar",pos:"v",syn:["levantar"],ant:["bajar"]},
+{base:"antiguo",pos:"adj",syn:["viejo"],ant:["moderno"]},
+{base:"caro",pos:"adj",syn:["costoso"],ant:["barato"]},
+{base:"comienzo",pos:"n",syn:["inicio"],ant:["final"]},
+{base:"cómodo",pos:"adj",syn:["confortable"],ant:["incómodo"]},
+{base:"demorar",pos:"v",syn:["retrasar"],ant:["adelantar"]},
+{base:"derecha",pos:"n",syn:["diestra"],ant:["izquierda","zurda"]},
+{base:"ensuciar",pos:"v",syn:["manchar"],ant:["limpiar"]},
+{base:"entretenido",pos:"adj",syn:["divertido"],ant:["aburrido"]},
+{base:"error",pos:"n",syn:["fallo"],ant:["acierto"]},
+{base:"extraño",pos:"adj",syn:["raro"],ant:["habitual"]},
+{base:"ganador",pos:"n",syn:["vencedor"],ant:["perdedor"]},
+{base:"hallar",pos:"v",syn:["encontrar"],ant:["perder"]},
+{base:"húmedo",pos:"adj",syn:["mojado"],ant:["seco"]},
+{base:"mentira",pos:"n",syn:["engaño"],ant:["verdad"]},
+{base:"rápido",pos:"adj",syn:["veloz"],ant:["lento"]},
+{base:"sanar",pos:"v",syn:["curar"],ant:["enfermar"]},
+{base:"temprano",pos:"adj",syn:["pronto"],ant:["tarde"]},
+{base:"tierno",pos:"adj",syn:["blando"],ant:["duro"]},
+{base:"tristeza",pos:"n",syn:["pena"],ant:["alegría"]},
+{base:"vago",pos:"adj",syn:["perezoso"],ant:["trabajador"]},
+{base:"valentía",pos:"n",syn:["valor"],ant:["cobardía"]},
+{base:"escarpado",pos:"adj",syn:["inclinado","abrupto","empinado","arriscado"],ant:["llano","plano"]},
+{base:"gélido",pos:"adj",syn:["frío","helado","congelado"],ant:["cálido","caliente","abrasador"]},
+{base:"hermoso",pos:"adj",syn:["bello","bonito","precioso","encantador","atractivo","primoroso","guapo"],ant:["feo","horrible","espantoso"]},
+{base:"extenso",pos:"adj",syn:["amplio","vasto"],ant:["pequeño","reducido"]},
+{base:"cristalino",pos:"adj",syn:["transparente"],ant:[]},
+{base:"hondo",pos:"adj",syn:["profundo"],ant:[]},
+{base:"litoral",pos:"n",syn:["costa"],ant:[]},
+{base:"embarcaciones",pos:"n",syn:["barcas"],ant:[]},
+{base:"frío",pos:"adj",syn:[],ant:["cálido"]},
+{base:"cercano",pos:"adj",syn:[],ant:["lejano"]},
+{base:"fino",pos:"adj",syn:[],ant:["grueso"]},
+{base:"desierta",pos:"adj",syn:[],ant:["concurrida"]},
+{base:"suave",pos:"adj",syn:[],ant:["fuerte"]},
+{base:"despejado",pos:"adj",syn:[],ant:["cubierto"]},
+{base:"contaminar",pos:"v",syn:[],ant:["descontaminar"]},
+{base:"cuidar",pos:"v",syn:[],ant:["descuidar"]},
+{base:"atar",pos:"v",syn:[],ant:["desatar"]},
+{base:"conocer",pos:"v",syn:[],ant:["desconocer"]},
+{base:"aparecer",pos:"v",syn:[],ant:["desaparecer"]},
+{base:"posible",pos:"adj",syn:[],ant:["imposible"]},
+{base:"vencible",pos:"adj",syn:[],ant:["invencible"]},
+{base:"comible",pos:"adj",syn:[],ant:["incomible"]},
+{base:"susceptible",pos:"adj",syn:[],ant:["insusceptible"]},
+{base:"aplicable",pos:"adj",syn:[],ant:["inaplicable"]}].map(it=>({base:it.base.toLowerCase(),pos:it.pos,syn:(it.syn||[]).map(s=>s.toLowerCase()),ant:(it.ant||[]).map(a=>a.toLowerCase())}));
+
+/* ====== Notas ====== */
+const gradeTable=[{min:20.4,max:21.0,grade:"1"},{min:19.3,max:20.3,grade:"1-"},{min:18.3,max:19.2,grade:"2+"},{min:17.4,max:18.2,grade:"2"},{min:16.2,max:17.3,grade:"2-"},{min:15.5,max:16.1,grade:"3+"},{min:14.5,max:15.4,grade:"3"},{min:13.4,max:14.4,grade:"3-"},{min:12.6,max:13.3,grade:"4+"},{min:11.6,max:12.5,grade:"4"},{min:10.5,max:11.5,grade:"4-"},{min:9.5,max:10.4,grade:"5+"},{min:6.3,max:9.4,grade:"5"},{min:5.3,max:6.2,grade:"5-"},{min:0.0,max:5.2,grade:"6"}];
+function computeGrade(s){ const last=gradeTable[gradeTable.length-1]; const row=gradeTable.find(r=>s>=r.min&&s<=r.max)||last; return row.grade; } // sin .at()
+
+/* ====== Estado ====== */
+let settings={ignoreAccents:true};
+let game={deck:[],idx:0,score:0,good:0,bad:0,mistakes:[],usedRetry:false,usedHint:false};
+
+/* ====== Feedback (✔ / ✖) ====== */
+function setFeedback(kind,msg=""){ const f=$("#feedback"); f.innerHTML=iconSVG(kind==="bad"?"bad":"ok"); f.classList.remove("pop"); void f.offsetWidth; f.classList.add("pop"); $("#helper").textContent=msg; }
+
+/* ====== Lógica ====== */
+const normalize=(t)=> settings.ignoreAccents ? removeDiacritics((t||"").trim().toLowerCase()) : (t||"").trim().toLowerCase();
+const isCorrect=(u,list)=> list.some(w=> normalize(w)===normalize(u));
+const buildDeck=()=> shuffle(BANK).slice(0,21).map(it=>{const modes=[]; if(it.syn?.length)modes.push("syn"); if(it.ant?.length)modes.push("ant"); return {item:it,mode:sample(modes.length?modes:["syn"])};});
+function renderRound(){ const {idx,deck}=game; const {item,mode}=deck[idx];
+  $("#hud").classList.remove("hidden"); $("#hudHint").classList.add("hidden");
+  $("#round").textContent=idx+1; $("#modeTag").textContent=(mode==="syn"?"Sinónimo":"Antónimo");
+  $("#modeWord").textContent=(mode==="syn"?"sinónimo":"antónimo"); $("#promptWord").textContent=item.base;
+  $("#answer").value=""; $("#answer").focus(); $("#hintArea").innerHTML=""; $("#helper").textContent=""; $("#feedback").innerHTML="";
+  game.usedRetry=false; game.usedHint=false; updateHUD();
+}
+function updateHUD(){ $("#good").textContent=game.good; $("#bad").textContent=game.bad; $("#score").textContent=Number(game.score.toFixed(1)); $("#bar").style.width=`${(game.idx/21)*100}%`; }
+function finishOrNext(){ game.idx++; if(game.idx<game.deck.length){ setTimeout(renderRound,350);} else endGame(); }
+
+/* ====== Acciones ====== */
+function handleCheck(){ const {item,mode}=game.deck[game.idx]; const list=(mode==="syn")?item.syn:item.ant; const ans=$("#answer").value;
+  if(!ans){ setFeedback("bad","Escribe algo antes de comprobar."); AudioFX.fail(); return; }
+  if(isCorrect(ans,list)){
+    if(game.usedHint||game.usedRetry){ game.score+=.5; setFeedback("ok","¡Correcto! (+0,5)"); AudioFX.partial(); confettiBurst(innerWidth*.5,innerHeight*.35,90,8); }
+    else { game.score+=1; setFeedback("ok","¡Perfecto! (+1)"); AudioFX.success(); confettiBurst(innerWidth*.5,innerHeight*.35,150,12); }
+    game.good++; finishOrNext();
+  }else{
+    game.bad++; game.mistakes.push({base:item.base,mode,answer:ans,valid:list});
+    setFeedback("bad",`Ejemplos válidos: ${list.slice(0,3).join(", ")}`); AudioFX.fail(); $("#answer").focus();
+  } updateHUD();
+}
+function giveHint(){ const {item,mode}=game.deck[game.idx]; const correct=sample((mode==="syn")?item.syn:item.ant);
+  if(!correct){ setFeedback("bad","No hay pista para esta palabra."); AudioFX.fail(); return; }
+  game.usedHint=true;
+  const pool=[].concat(...BANK.filter(x=>x.pos===item.pos).map(x=>(mode==="syn")?x.syn:x.ant)).filter(Boolean); // sin flatMap por compatibilidad total
+  const opts=shuffle([correct,...shuffle(pool.filter(w=>w!==correct)).slice(0,2)]);
+  const area=$("#hintArea"); area.innerHTML="";
+  opts.forEach(opt=>{ const b=document.createElement("button"); b.className="option"; b.textContent=opt;
+    b.onclick=()=>{ [...area.children].forEach(x=>x.disabled=true);
+      if(normalize(opt)===normalize(correct)){ b.classList.add("correct"); game.score+=.5; game.good++; setFeedback("ok","¡Correcto con pista! (+0,5)"); AudioFX.partial(); confettiBurst(innerWidth*.5,innerHeight*.35,100,8); }
+      else{ b.classList.add("wrong"); game.bad++; game.mistakes.push({base:item.base,mode,answer:opt+" (pista)",valid:(mode==="syn")?item.syn:item.ant}); setFeedback("bad",`Buena: ${correct}`); AudioFX.fail(); }
+      updateHUD(); setTimeout(()=>{ area.innerHTML=""; finishOrNext(); }, 700);
+    }; area.appendChild(b);
+  }); AudioFX.click();
+}
+function useRetry(){ game.usedRetry=true; $("#helper").textContent="Reintento activo: si aciertas ahora suma 0,5."; $("#answer").focus(); AudioFX.click(); }
+function showAnswer(){ const {item,mode}=game.deck[game.idx]; const list=(mode==="syn")?item.syn:item.ant; $("#helper").textContent=`Soluciones: ${list.join(", ")}`; setFeedback("ok","Consulta (no puntúa)."); AudioFX.click(); }
+function skip(){ const {item,mode}=game.deck[game.idx]; game.bad++; game.mistakes.push({base:item.base,mode,answer:"(saltada)",valid:(mode==="syn")?item.syn:item.ant}); setFeedback("bad","Siguiente…"); AudioFX.fail(); updateHUD(); finishOrNext(); }
+
+/* ====== Fin ====== */
+function endGame(){ $("#playArea").classList.add("hidden"); $("#resultArea").classList.remove("hidden"); $("#restartBtn").classList.remove("hidden");
+  $("#finalGood").textContent=game.good; $("#finalBad").textContent=game.bad; $("#finalScore").textContent=Number(game.score.toFixed(1)); $("#finalGrade").textContent=computeGrade(game.score);
+  $("#bigEmoji").innerHTML = iconSVG( game.score>=12 ? "ok" : "bad" );
+}
+
+/* ====== Eventos ====== */
+$("#accentSwitch").addEventListener("click",(e)=>{ const on=e.currentTarget.getAttribute("data-on")!=="true"; e.currentTarget.setAttribute("data-on",String(on)); settings.ignoreAccents=on; AudioFX.click();
+  const t=$("#tildeToast"); t.textContent=on?"✓ Tildes ignoradas":"× Tildes activas"; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1100);
+});
+function startGame(){ AudioFX.enable(); AudioFX.start(); game.deck=buildDeck(); game.idx=0; game.score=0; game.good=0; game.bad=0; game.mistakes=[]; $("#playArea").classList.remove("hidden"); $("#resultArea").classList.add("hidden"); $("#restartBtn").classList.add("hidden"); renderRound(); }
+$("#startBtn").addEventListener("click",startGame);
+$("#restartBtn").addEventListener("click",startGame);
+$("#againBtn").addEventListener("click",startGame);
+$("#checkBtn").addEventListener("click",handleCheck);
+$("#answer").addEventListener("keydown",(e)=>{ if(e.key==="Enter") handleCheck(); });
+$("#hintBtn").addEventListener("click",giveHint);
+$("#retryBtn").addEventListener("click",useRetry);
+$("#showAnsBtn").addEventListener("click",showAnswer);
+$("#skipBtn").addEventListener("click",skip);
+$("#muteBtn").addEventListener("click",()=>{ const m=AudioFX.toggleMute(); $("#muteBtn").textContent=m?"🔇":"🔊"; });
+</script>
+</body>
+</html>
